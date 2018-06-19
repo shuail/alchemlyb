@@ -250,8 +250,9 @@ def file_validation(outfile):
     file_datum.ntpr = ntpr
     return file_datum
 
+k_b = 8.3144621E-3
 
-def extract_u_nk(outfile):
+def extract_u_nk(outfile, T):
     """Return reduced potentials `u_nk` from Amber outputfile.
 
     Parameters
@@ -265,7 +266,7 @@ def extract_u_nk(outfile):
         Potential energy for each alchemical state (k) for each frame (n).
 
     """
-
+    beta = 1/(k_b * T)    
     file_datum = file_validation(outfile)
     if not file_validation(outfile):   # pragma: no cover
         return None
@@ -288,7 +289,7 @@ def extract_u_nk(outfile):
                     if E > 0.0:
                         high_E_cnt += 1
 
-                    file_datum.mbar_energies[lmbda].append(E - E_ref)
+                    file_datum.mbar_energies[lmbda].append(beta*(E - E_ref))
 
         if high_E_cnt:
             logger.warning('\n WARNING: %i MBAR energ%s > 0.0 kcal/mol' %
@@ -304,7 +305,9 @@ def extract_u_nk(outfile):
     return p_d
 
 
-def extract_dHdl(outfile):
+
+
+def extract_dHdl(outfile, T):
     """Return gradients ``dH/dl`` from Amber TI outputfile.
 
     Parameters
@@ -317,6 +320,7 @@ def extract_dHdl(outfile):
     dH/dl : Series
         dH/dl as a function of time for this lambda window.
     """
+    beta = 1/(k_b * T)    
     file_datum = file_validation(outfile)
     if not file_validation(outfile):
         return None
@@ -350,7 +354,7 @@ def extract_dHdl(outfile):
                                                        extra=line)
                     if nstep != old_nstep and dvdl is not None \
                             and nstep is not None:
-                        file_datum.gradients.append(dvdl)
+                        file_datum.gradients.append(beta*(dvdl))
                         nensec += 1
                         old_nstep = nstep
             if line == '   5.  TIMINGS\n':

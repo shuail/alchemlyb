@@ -78,7 +78,7 @@ class MBAR(BaseEstimator):
         
         groups = u_nk.groupby(level=u_nk.index.names[1:])
         N_k = [(len(groups.get_group(i)) if i in groups.groups else 0) for i in u_nk.columns]        
-        
+
         self._mbar = MBAR_(u_nk.T, N_k,
                            maximum_iterations=self.maximum_iterations,
                            relative_tolerance=self.relative_tolerance,
